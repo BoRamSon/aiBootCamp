@@ -15,13 +15,6 @@ class InputValidator:
         raise ValueError("반드시 3자리를 입력하셔야 합니다. 다시 입력해주세요.")
       if self.is_duplicate():
         raise ValueError("중복된 숫자를 함께 입력하실 수 없습니다. 다시 입력해주세요.")
-        
-    def validate_answer(self):
-      if self.is_answer():
-        raise ValueError("Y or N 값이 입력되지 않았습니다. 다시 입력해주세요.")
-
-    def is_answer(self):
-      return self.user_input not in ['Y', 'y', 'N', 'n']
 
     def is_empty(self):
       return self.user_input == ""
@@ -37,37 +30,56 @@ class InputValidator:
     
     def is_duplicate(self):
       return len(set(self.user_input)) != 3
+    
+    def validate_answer(self):
+      if self.is_answer():
+        raise ValueError("Y or N 값이 입력되지 않았습니다. 다시 입력해주세요.")
+
+    def is_answer(self):
+      return self.user_input not in ['Y', 'y', 'N', 'n']
 
 
-class BaseballGame():
+
+class InputDataAndValidate():
+  
+  def input_number(self):
+    for i in range(1,11):
+      input_three_number = input('숫자 3개를 입력하세요 (예: 123): ')
+      validate_number = input_three_number.replace(' ', '')
+      try:
+        validator = InputValidator(validate_number)
+        validator.validate_number()
+      except ValueError as e:
+        print('ERROR:', e)
+        if i == 10: return print('종료되었습니다. 다시 시도하세요.')
+      else:
+        print(f"------------------------ \n{validate_number}를 입력하셨습니다.")
+        break
+    print(list(str(validate_number)))
+    return list(str(validate_number))
+
+  def input_answer(self):
+    for i in range(1,11):
+      is_continue = input('🎮 게임을 계속 진행하시겠습니까?? \n(진행 = \'Y\'입력 / 끝내기 = \'N\'입력)')
+      try:
+        validator = InputValidator(is_continue)
+        validator.validate_answer()
+      except ValueError as e:
+        print("검증 실패:", e)
+      else:
+        return is_continue
+    
+
+
+class CalculBaseball():
   def __init__(self):
-    self.play_baseball_game()
+    self.input_data = InputDataAndValidate()
 
   def computer_random_numbers(self):
     random_three_number = random.sample(range(1,10), 3)
     random_three_number = [str(i) for i in random_three_number] 
     return random_three_number
 
-  def user_input_numbers(self):
-    for i in range(1,11):
-      input_three_number = input('숫자 3개를 입력하세요 (예: 123): ')
-      validate_number = input_three_number.replace(' ', '')
-
-      try:
-        validator = InputValidator(validate_number)
-        validator.validate_number()
-      except ValueError as e:
-        print("검증 실패:", e)
-      else:
-        print(f"------------------------ \n{validate_number}를 입력하셨습니다.")
-        break
-
-      if i == 10:
-        print('\nError: 3개의 숫자를 10번 이상 잘 못된 값을 입력하여 종료되었습니다.\n')
-        break
-    print(list(str(validate_number)))
-    return list(str(validate_number))
-    
   def is_collect_number(self, random_number, user_number):
     strike = 0
     ball = 0
@@ -92,7 +104,7 @@ class BaseballGame():
     write_result_history = []
 
     while True:
-      user_number = self.user_input_numbers()
+      user_number = self.input_data.input_number()
       strike, ball, out = self.is_collect_number(random_number, user_number)
       try_count += 1
       write_result_history.append({'try':  try_count,'strike': strike, 'ball': ball, 'out': out})
@@ -111,44 +123,52 @@ class BaseballGame():
         
     return try_count
 
-  def play_baseball_game(self):      
+
+class OutputData():
+
+  def output_statistics(self, game_play_count, collect_history):
+    print(f"\n총 {game_play_count}번 게임을 실시 했습니다.")
+    print(f"야구 게임이 완전히 종료되었습니다. 아래 통계를 확인해보세요! \n< 통계 >")
+    for i in collect_history:
+      print(f"- {i['game_play_count']}번째 게임에서 {i['game_try_count']}번째만에 맞췄습니다.")
+
+  def output_winning_rate(self, game_play_count, collect_history) :
+    fail_count = 0
+    for i in collect_history:
+      if i['game_try_count'] == '실패':
+        fail_count += 1
+    winning_rate = ((game_play_count-fail_count)/game_play_count) * 100
+    print (f"🏆 승률은 {winning_rate}% 입니다.")
+    return winning_rate
+
+
+class StartBaseball():
+  def __init__(self):
+    self.input_data = InputDataAndValidate()
+    self.calcul_baseball = CalculBaseball()
+    self.output_data = OutputData()
+
+  def start_baseball_game(self):      
     print('⚾️ 야구 게임이 시작되었습니다! \n게임당 맞출 수 있는 기회는 10번 입니다.\n')
-    play_count = 0
+    game_play_count = 0
     collect_history = []
 
     for i in range(1,11): 
-      game_try_count = self.collect_number_result()
-      play_count += 1
-      fail_count = 0
-      collect_history.append({'game_play_count': play_count, 'game_try_count': game_try_count})
-      
-      for i in range(1,11):
-        is_continue = input('🎮 게임을 계속 진행하시겠습니까?? \n(진행 = \'Y\'입력 / 끝내기 = \'N\'입력)')
+      game_try_count = self.calcul_baseball.collect_number_result()
+      game_play_count += 1
+      collect_history.append({'game_play_count': game_play_count, 'game_try_count': game_try_count})
 
-        try:
-          validator = InputValidator(is_continue)
-          validator.validate_answer()
-        except ValueError as e:
-          print("검증 실패:", e)
-        else:
-          if is_continue == 'N' or is_continue == 'n':
-            # 통계
-            print(f"\n총 {play_count}번 게임을 실시 했습니다.")
-            print(f"야구 게임이 완전히 종료되었습니다. 아래 통계를 확인해보세요! \n< 통계 >")
-            for i in collect_history:
-              print(f"- {i['game_play_count']}번째 게임에서 {i['game_try_count']}번째만에 맞췄습니다.")
-            # 승률
-            for i in collect_history:
-              if i['game_try_count'] == '실패':
-                fail_count += 1
-            wining_rate = ((play_count-fail_count)/play_count) * 100
-            print (f"🏆 승률은 {wining_rate}% 입니다.")
-            return wining_rate
-          else:
-            print('⚾️ 야구 게임을 다시 시작하셨습니다.\n')
-            break
+      is_continue = self.input_data.input_answer() # 게임을 계속 하시겠습니까?
+      if is_continue == 'N' or is_continue == 'n': # 안하겠다고 했다면,
+        self.output_data.output_statistics(game_play_count, collect_history) # 통계 출력
+        return self.output_data.output_winning_rate(game_play_count, collect_history) # 승률 출력
+      else:
+        print('⚾️ 야구 게임을 다시 시작하셨습니다.\n')
+        break
 
-        if i == 10:
-          return print('\nError: 10번 이상 잘 못된 값을 입력하여 종료되었습니다.\n')
+    if i == 10:
+      return print('\nError: 10번 이상 잘 못된 값을 입력하여 종료되었습니다.\n')
+    
 
-baseball_game = BaseballGame()
+game = StartBaseball()
+game.start_baseball_game()

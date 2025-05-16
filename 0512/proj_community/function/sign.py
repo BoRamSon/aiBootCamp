@@ -8,7 +8,7 @@ class Sign:
 
   def make_member_number(self):   # 회원 가입 시 회원번호 4자리를 랜덤으로 생성함 / 중복은 생성하지 못함
     while True:
-      random_member_number = random.randint(1000, 9999)
+      random_member_number = random.randint(1000, 9998)
       if random_member_number not in self.member_number_set:
         self.member_number_set.add(random_member_number)
         return random_member_number
@@ -22,26 +22,41 @@ class Sign:
     phone = (input('전화번호: '))
     email = (input('이메일: '))
     print('🙋🏻‍♀️ 회원가입이 완료 되었습니다.')
-    return self.database.db_member(member_number, userid, userpawssword, name, phone, email)
+    return self.database.db_member(
+      member_number, userid, userpawssword, name, phone, email
+    )
 
-  def sign_in(self, db_member_dict_list, is_logged, logged_member):
-    if len(db_member_dict_list) == 0:
-      print('⛔️ 회원가입을 먼저 진행해주세요.')
-      return False, None
+  def sign_in(self, db_member_dict_list, is_admin_logged, is_logged, logged_member):
+    if is_logged == False:
+      if len(db_member_dict_list) == 1:
+        print('⛔️ admin을 제외하고, 회원이 존재하지 않습니다. 회원가입을 먼저 진행해주세요.')
     if is_logged == True:
       print('⛔️ 이미 로그인 되어있습니다. 로그아웃을 먼저 해주세요.')
-      return is_logged, logged_member
+      return is_admin_logged, is_logged, logged_member
     # validation 없음
     userid = (input('ID : '))
     userpawssword = (input('Password : '))
+    
+    if userid == 'admin' and userpawssword == 'admin':
+      is_admin_logged_in = True
+      is_logged_in = False
+      logged_member_number = 9999
+      return is_admin_logged_in, is_logged_in, logged_member_number
+
     for i in db_member_dict_list:
       if i['id'] == userid and i['pw'] == userpawssword:
+        is_admin_logged_in = False
         is_logged_in = True
         logged_member_number = i['member_number']
         print('🔑 성공적으로 로그인 되었습니다.')
+        return is_admin_logged_in, is_logged_in, logged_member_number
       else:
-        print('⛔️ 로그인에 실패하였습니다.')
-    return is_logged_in, logged_member_number
+        is_admin_logged_in = False
+        is_logged_in = False
+        logged_member_number = None
+    print('⛔️ 로그인에 실패하였습니다.')
+    return is_admin_logged_in, is_logged_in, logged_member_number
+    
   
   def list_person_info(self, db_member_dict_list, is_logged_in, logged_member_number):
     if is_logged_in == False:
@@ -60,7 +75,7 @@ class Sign:
     if is_logged_in == False:
       return print('⛔️ 로그인 상태가 아닙니다. 먼저 로그인 해주세요.')
     print('------------------------------------------')
-    print('✏️ 회원님의 정보를 수정합니다.')
+    print('✏️ 회원님의 정보를 수정합니다.\n')
     for i in db_member_dict_list:
       if logged_member_number == i['member_number']:
         print(f"\'name: {i['name']}\' | member_number: {i['member_number']}")
@@ -68,7 +83,7 @@ class Sign:
         print(f"phone: {i['phone']} | email: {i['email']}")
 
         # validation 없음
-        select = input('변경할 것을 입력해주세요 : ')
+        select = input('\n변경할 것을 입력해주세요 : ')
         new_value = input(f'{select}에 대해서 변경할 내용을 입력하세요 : ')
         i[select] = new_value  
         print('✏️ 회원님의 정보 수정이 완료되었습니다.')
@@ -78,8 +93,9 @@ class Sign:
 
   def quit_member(self, db_member_dict_list, is_logged_in, logged_member_number):
     if is_logged_in == False:
+      logout = True
       print('⛔️ 로그인 상태가 아닙니다. 먼저 로그인 해주세요.')
-      return
+      return db_member_dict_list
     print('------------------------------------------')
     print('⍈ 회원탈퇴를 진행합니다.')
     for i in db_member_dict_list:
@@ -88,24 +104,28 @@ class Sign:
         select = input('정말로 회원을 탈퇴하시겠습니까? (Y / N) : ')
         if select == 'Y' or select == 'y':
           db_member_dict_list.remove(i)
+          logout = False
           print('⍈ 회원탈퇴가 성공적으로 이루어졌습니다.')
           print('------------------------------------------')
           break
         else:
+          logout = True
           print('⍈ 회원탈퇴가 취소되었습니다.')
           print('------------------------------------------')
           break
-    return db_member_dict_list
-
-
+    return db_member_dict_list, logout
 
   def sign_out(self):
+    is_admin_logged_in = False
     is_logged_in = False
     logged_member_number = None
     print('------------------------------------------')
     print('🔑 로그아웃 되었습니다.')
     print('------------------------------------------')
-    return is_logged_in, logged_member_number
+    return is_admin_logged_in, is_logged_in, logged_member_number
+  
+
+  
 
 
         

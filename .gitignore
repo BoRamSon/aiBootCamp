@@ -31,6 +31,7 @@ Thumbs.db
 
 # 환경 변수 파일
 .env
+env_aiBootCamp
 
 # 파이썬 패키지
 *.egg-info/

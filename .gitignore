@@ -39,7 +39,7 @@ build/
 
 
 # custom
-공부*
-양식*
-aclImdb/
+.study/
+.data/
 *.npz
+aclImdb/

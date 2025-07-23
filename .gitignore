@@ -174,12 +174,18 @@ pyrightconfig.json
 .ipynb_checkpoints/
 
 
+# =============================================
 # custom
 .data/
 *.npz
-aclImdb/
+.vscode/
 .study_history/
 .env
-.vscode/
-cats_and_dogs/
 
+# 데이터셋
+aclImdb/
+cats_and_dogs*
+
+# 모델
+*.keras
+cats_and_dogs_history.bin

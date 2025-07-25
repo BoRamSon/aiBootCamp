@@ -184,7 +184,8 @@ pyrightconfig.json
 
 # 데이터셋
 aclImdb/
-cats_and_dogs*
+# cats_and_dogs*
+# 여기 그냥 data 파일 자체를 ignore 시켜야 하지 않나싶습니다.
 
 # 모델
 *.keras

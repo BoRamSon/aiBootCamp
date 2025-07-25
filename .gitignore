@@ -176,6 +176,7 @@ pyrightconfig.json
 
 # =============================================
 # custom
+.idx/
 .data/
 *.npz
 .vscode/

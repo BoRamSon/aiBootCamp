@@ -191,3 +191,4 @@ aclImdb/
 # 모델
 *.keras
 cats_and_dogs_history.bin
+aclImdb_v1.tar.gz
